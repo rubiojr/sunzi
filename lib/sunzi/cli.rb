@@ -71,10 +71,6 @@ module Sunzi
         # compile attributes and recipes
         do_compile(role)
 
-        # The host key might change when we instantiate a new VM, so
-        # we remove (-R) the old host key from known_hosts.
-        `ssh-keygen -R #{host} 2> /dev/null`
-
         remote_commands = <<-EOS
         rm -rf ~/sunzi &&
         mkdir ~/sunzi &&
@@ -87,7 +83,7 @@ module Sunzi
 
         local_commands = <<-EOS
         cd compiled
-        tar cz . | ssh -o 'StrictHostKeyChecking no' #{endpoint} -p #{port} '#{remote_commands}'
+        tar cz . | ssh #{endpoint} -p #{port} '#{remote_commands}'
         EOS
 
         Open3.popen3(local_commands) do |stdin, stdout, stderr|
@@ -146,10 +142,7 @@ module Sunzi
       def parse_target(target)
         target.match(/(.*@)?(.*?)(:.*)?$/)
         # Load ssh config if it exists
-        config = Net::SSH::Config.for($2)
-        [ ($1 && $1.delete('@') || config[:user] || 'root'), 
-          config[:host_name] || $2, 
-          ($3 && $3.delete(':') || config[:port] && config[:port].to_s || '22') ]
+        [ $1 || 'root', $2, $3 || '22']
       end
 
       def copy_local_files(config, copy_or_template)
