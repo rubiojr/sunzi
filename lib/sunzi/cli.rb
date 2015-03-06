@@ -84,6 +84,12 @@ module Sunzi
         local_commands = <<-EOS
         cd compiled
         tar cz . | ssh #{endpoint} -p #{port} '#{remote_commands}'
+        if [ $? != 0 ]; then
+          >&2 echo "\n☢ Deploy failed! ☢"
+          exit 1
+        else
+          echo "\n⟡⟡⟡ Ace! ⟡⟡⟡"
+        fi
         EOS
 
         Open3.popen3(local_commands) do |stdin, stdout, stderr|
@@ -94,7 +100,7 @@ module Sunzi
             end
           end
           while (line = stdout.gets)
-            print line.color(:green)
+            print line
           end
           t.join
         end
@@ -141,8 +147,11 @@ module Sunzi
 
       def parse_target(target)
         target.match(/(.*@)?(.*?)(:.*)?$/)
-        # Load ssh config if it exists
-        [ $1 || 'root', $2, $3 || '22']
+        user = $1 || 'root'
+        host = $2
+        port = $3 || 22
+        raise "Invalid target host" if host.nil?
+        [user.gsub('@', ''), host, port]
       end
 
       def copy_local_files(config, copy_or_template)
