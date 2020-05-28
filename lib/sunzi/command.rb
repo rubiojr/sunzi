@@ -24,10 +24,6 @@ module Sunzi
       sudo = 'sudo ' if options.sudo?
       endpoint = Endpoint.new(target)
 
-      # The host key might change when we instantiate a new VM, so
-      # we remove (-R) the old host key from known_hosts.
-      `ssh-keygen -R #{endpoint.host} 2> /dev/null`
-
       remote_commands = <<-EOS
       rm -rf ~/sunzi &&
       mkdir ~/sunzi &&
