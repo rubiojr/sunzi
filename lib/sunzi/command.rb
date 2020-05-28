@@ -40,7 +40,7 @@ module Sunzi
 
       local_commands = <<-EOS
       cd compiled
-      tar cz . | ssh -o 'StrictHostKeyChecking no' #{endpoint.user}@#{endpoint.host} -p #{endpoint.port} '#{remote_commands}'
+      tar cz . | ssh #{endpoint.user}@#{endpoint.host} -p #{endpoint.port} '#{remote_commands}'
       EOS
 
       Open3.popen3(local_commands) do |stdin, stdout, stderr|
